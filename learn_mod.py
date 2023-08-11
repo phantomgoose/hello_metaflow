@@ -1,6 +1,6 @@
 import numpy as np
 from keras import layers
-from keras.models import Sequential, load_model
+from keras.models import Sequential
 from metaflow import FlowSpec, step
 from sklearn.model_selection import train_test_split
 
@@ -34,18 +34,18 @@ class LearnModSpec(FlowSpec):
     def train(self):
         # TODO: Parallelize this step
         print("Training model")
+
         model = Sequential([
-            layers.Dense(256, activation='relu', input_shape=(1,)),
+            layers.Dense(512, activation='relu', input_shape=(1,)),
             layers.Dense(1)
         ])
 
-        model.compile(optimizer='adam',
-                      loss='mse')
+        model.compile(optimizer='adam', loss='mse')
 
-        model.fit(self.x_train, self.y_train, epochs=20_000, verbose=2, batch_size=10_000,
+        model.fit(self.x_train, self.y_train, epochs=100, verbose=2, batch_size=10_000,
                   validation_data=(self.x_test, self.y_test))
 
-        model.save("model.h5")
+        model.save("output/model.h5")
 
         self.next(self.end)
 
@@ -55,7 +55,4 @@ class LearnModSpec(FlowSpec):
 
 
 if __name__ == "__main__":
-    loaded_model = load_model("model.h5")
-    print(loaded_model.predict([69]))
-
     LearnModSpec()
