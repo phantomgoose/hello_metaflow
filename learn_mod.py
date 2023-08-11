@@ -18,7 +18,7 @@ class LearnModSpec(FlowSpec):
     def start(self):
         print("Starting and generating data")
 
-        self.inputs = np.array(list(range(0, 100_000)))
+        self.inputs = np.array(list(range(0, 1_000_000)))
         self.outputs = np.array(list(map(_func_to_learn, self.inputs)))
 
         self.next(self.split)
@@ -32,16 +32,17 @@ class LearnModSpec(FlowSpec):
 
     @step
     def train(self):
+        # TODO: Parallelize this step
         print("Training model")
         model = Sequential([
-            layers.Dense(64, activation='relu', input_shape=(1,)),
+            layers.Dense(256, activation='relu', input_shape=(1,)),
             layers.Dense(1)
         ])
 
         model.compile(optimizer='adam',
                       loss='mse')
 
-        model.fit(self.x_train, self.y_train, epochs=500, verbose=2,
+        model.fit(self.x_train, self.y_train, epochs=20_000, verbose=2, batch_size=10_000,
                   validation_data=(self.x_test, self.y_test))
 
         model.save("model.h5")
