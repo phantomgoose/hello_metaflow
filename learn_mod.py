@@ -1,8 +1,4 @@
-import numpy as np
-from keras import layers
-from keras.models import Sequential
-from metaflow import FlowSpec, step, Parameter
-from sklearn.model_selection import train_test_split
+from metaflow import FlowSpec, step, Parameter, retry, kubernetes
 
 
 def _func_to_learn(x: int) -> int:
@@ -22,6 +18,7 @@ class LearnModSpec(FlowSpec):
 
     @step
     def start(self):
+        import numpy as np
         print("Starting and generating data")
 
         self.inputs = np.array(list(range(0, self.input_size)))
@@ -31,14 +28,19 @@ class LearnModSpec(FlowSpec):
 
     @step
     def split(self):
+        from sklearn.model_selection import train_test_split
         print("Splitting data into train and test sets")
         self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.inputs, self.outputs,
                                                                                 test_size=0.5, random_state=42)
         self.next(self.train)
 
+    @kubernetes(cpu=1, memory=500, image='tensorflow/tensorflow')
+    @retry
     @step
     def train(self):
-        # TODO: Parallelize this step?
+        from keras.models import Sequential
+        from keras import layers
+
         print("Training the model")
 
         model = Sequential([
