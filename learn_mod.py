@@ -10,7 +10,7 @@ class LearnModSpec(FlowSpec):
     Learn the target function
     """
 
-    dimensionality = Parameter('dimensionality', help='Dimensionality of the input data', default=1)
+    dimensionality = Parameter('dimensionality', help='Dimensionality of the input data', default=512)
     input_size = Parameter('input_size', help='Size of the input data', default=1_000_000)
     epochs = Parameter('epochs', help='Number of epochs to train for', default=100)
     verbosity = Parameter('verbosity', help='Verbosity of training', default=2)
@@ -53,9 +53,11 @@ class LearnModSpec(FlowSpec):
         model.fit(self.x_train, self.y_train, epochs=self.epochs, verbose=self.verbosity, batch_size=self.batch_size,
                   validation_data=(self.x_test, self.y_test))
 
-        # TODO: is there a better way to persist the model itself for future use?
-        self.model = model
+        # Save to a predefined location for ease of access in local runs
+        # Persist the bytes as a metaflow artifact: https://outerbounds.com/docs/use-keras-with-metaflow/
         model.save("output/model.h5")
+        with open("output/model.h5", "rb") as f:
+            self.model = f.read()
 
         self.next(self.end)
 
