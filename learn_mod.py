@@ -10,18 +10,18 @@ class LearnModSpec(FlowSpec):
     Learn the target function
     """
 
-    dimensionality = Parameter('dimensionality', help='Dimensionality of the input data', default=512)
-    input_size = Parameter('input_size', help='Size of the input data', default=1_000_000)
+    network_size = Parameter('network_size', help='Size of the network', default=50)
+    sample_size = Parameter('input_size', help='Number of input samples to generate', default=1_000_000)
     epochs = Parameter('epochs', help='Number of epochs to train for', default=100)
     verbosity = Parameter('verbosity', help='Verbosity of training', default=2)
-    batch_size = Parameter('batch_size', help='Batch size for training', default=10_000)
+    batch_size = Parameter('batch_size', help='Batch size for training', default=42)
 
     @step
     def start(self):
         import numpy as np
         print("Starting and generating data")
 
-        self.inputs = np.array(list(range(0, self.input_size)))
+        self.inputs = np.array(list(range(0, self.sample_size)))
         self.outputs = np.array(list(map(_func_to_learn, self.inputs)))
 
         self.next(self.split)
@@ -44,7 +44,7 @@ class LearnModSpec(FlowSpec):
         print("Training the model")
 
         model = Sequential([
-            layers.Dense(self.dimensionality, activation='relu', input_shape=(1,)),
+            layers.Dense(self.network_size, activation='relu', input_shape=(1,)),
             layers.Dense(1)
         ])
 
